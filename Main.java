@@ -15,14 +15,14 @@ public class Main {
     public static void main(String[] args) {
         loadData("./Vellichor/data/wdbc.data");
         
-        Random random = new Random(17);
+        Random random = new Random(41);
         shuffleData(random);
         
         runKNNExperiments(random);
     }
     
     public static void runKNNExperiments(Random random) {
-        // using 0.2 of the data for testing. Will remove when we generate our own data to test on.
+        // Using 0.2 of the data for testing. Will remove when we generate our own data to test on.
         DataSplit dataSplit = splitData(0.8);
         
         printDatasetInfo(dataSplit);
@@ -121,7 +121,7 @@ public class Main {
         }
         
         System.out.println("-".repeat(60));
-        System.out.printf("🏆 Best k value: %d (F1-Score: %.4f)%n", bestK, bestF1);
+        System.out.printf("Best k value: %d (F1-Score: %.4f)%n", bestK, bestF1);
         System.out.println("=".repeat(60));
     }
     
