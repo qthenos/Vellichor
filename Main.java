@@ -18,17 +18,19 @@ public class Main {
         Random random = new Random(41);
         shuffleData(random);
         
-        runKNNExperiments(random);
+        runKNNExperiments();
     }
     
-    public static void runKNNExperiments(Random random) {
-        // Using 0.2 of the data for testing. Will remove when we generate our own data to test on.
+    public static void runKNNExperiments() {
+        // Using 0.2 of the data for testing. Can remove if we generate our own data to test on.
         DataSplit dataSplit = splitData(0.8);
         
         printDatasetInfo(dataSplit);
-        
+
+        applyNormalization(dataSplit);
+
         testKNNPerformance(dataSplit);
-        
+
         findOptimalK(dataSplit);
     }
     
@@ -37,6 +39,8 @@ public class Main {
         public ArrayList<String> trainLabels;
         public ArrayList<ArrayList<Double>> testFeatures;
         public ArrayList<String> testLabels;
+        public ArrayList<ArrayList<Double>> normalizedTrainFeatures;
+        public ArrayList<ArrayList<Double>> normalizedTestFeatures;
         
         public DataSplit(ArrayList<ArrayList<Double>> trainFeatures, ArrayList<String> trainLabels,
                         ArrayList<ArrayList<Double>> testFeatures, ArrayList<String> testLabels) {
@@ -65,6 +69,14 @@ public class Main {
         System.out.println();
     }
     
+    public static void applyNormalization(DataSplit dataSplit) {
+        DataNormalizer normalizer = new DataNormalizer();
+
+        dataSplit.normalizedTrainFeatures = normalizer.fitTransform(dataSplit.trainFeatures);
+
+        dataSplit.normalizedTestFeatures = normalizer.transform(dataSplit.testFeatures);
+    }
+    
     public static void testKNNPerformance(DataSplit dataSplit) {
         System.out.println("=== KNN PERFORMANCE EVALUATION ===\n");
         
@@ -75,10 +87,8 @@ public class Main {
             System.out.println("Testing KNN with k = " + k);
             System.out.println("=".repeat(50));
             
-            knn knnModel = new knn(dataSplit.trainFeatures, dataSplit.trainLabels, k);
-            
-            ArrayList<String> predictions = makePredictions(knnModel, dataSplit.testFeatures);
-            
+            knn knnModel = new knn(dataSplit.normalizedTrainFeatures, dataSplit.trainLabels, k);
+            ArrayList<String> predictions = makePredictions(knnModel, dataSplit.normalizedTestFeatures);
             PerformanceMetrics metrics = new PerformanceMetrics(dataSplit.testLabels, predictions);
             metrics.printClassificationReport();
         }
@@ -98,9 +108,9 @@ public class Main {
         
         for (int k : kValues) {
             try {
-                knn knnModel = new knn(dataSplit.trainFeatures, dataSplit.trainLabels, k);
+                knn knnModel = new knn(dataSplit.normalizedTrainFeatures, dataSplit.trainLabels, k);
                 
-                ArrayList<String> predictions = makePredictions(knnModel, dataSplit.testFeatures);
+                ArrayList<String> predictions = makePredictions(knnModel, dataSplit.normalizedTestFeatures);
                 
                 PerformanceMetrics metrics = new PerformanceMetrics(dataSplit.testLabels, predictions);
                 double accuracy = metrics.getAccuracy();
